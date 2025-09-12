@@ -1,0 +1,7 @@
+class BaseUrl {
+  static String v1 = "https://flutter-amr.noviindus.in/api";
+}
+
+class EndPoint {
+  static String login = '/Login';
+}

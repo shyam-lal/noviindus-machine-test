@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:novindus_machine_test/config/constants/app_routes.dart';
 import 'package:novindus_machine_test/config/decoration/size_configs.dart';
+import 'package:novindus_machine_test/repositories/auth_service.dart';
 
 class LoginScreen extends StatelessWidget {
-  const LoginScreen({super.key});
+  // const LoginScreen({super.key});
+
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -14,17 +19,21 @@ class LoginScreen extends StatelessWidget {
             Stack(
               alignment: Alignment.center,
               children: [
-                Image.asset("assets/images/home-bg.png", fit: BoxFit.fill, height: 300,),
+                Image.asset(
+                  "assets/images/home-bg.png",
+                  fit: BoxFit.fill,
+                  height: 300,
+                ),
                 Container(
                   height: 300,
                   width: double.infinity,
                   color: Colors.black.withOpacity(0.4),
                 ),
                 SvgPicture.asset(
-                'assets/images/logo.svg',
-                width: SizeConfigs.screenWidth,
-                height: 100,
-              ),
+                  'assets/images/logo.svg',
+                  width: SizeConfigs.screenWidth,
+                  height: 100,
+                ),
               ],
             ),
             Padding(
@@ -34,15 +43,13 @@ class LoginScreen extends StatelessWidget {
                 children: [
                   const Text(
                     'Login Or Register To Book Your Appointments',
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 32),
                   const Text('Email'),
                   const SizedBox(height: 8),
                   TextField(
+                    controller: emailController,
                     decoration: InputDecoration(
                       hintText: 'Enter your email',
                       filled: true,
@@ -57,6 +64,7 @@ class LoginScreen extends StatelessWidget {
                   const Text('Password'),
                   const SizedBox(height: 8),
                   TextField(
+                    controller: passwordController,
                     obscureText: true,
                     decoration: InputDecoration(
                       hintText: 'Enter password',
@@ -73,7 +81,20 @@ class LoginScreen extends StatelessWidget {
                     width: double.infinity,
                     height: 50,
                     child: ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () async {
+                        final result = await AuthService().login(
+                          "test_user",
+                          "12345678",
+                        );
+                        if (result['success']) {
+                          Navigator.pushNamed(
+                            context,
+                            AppRoutes.appointmentList,
+                          );
+                        } else {
+                          print("Failed");
+                        }
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF0D5325),
                         shape: RoundedRectangleBorder(
@@ -93,22 +114,19 @@ class LoginScreen extends StatelessWidget {
                       style: TextStyle(color: Colors.black54),
                       children: [
                         TextSpan(
-                          text: 'By creating or logging into an account you are agreeing with our ',
+                          text:
+                              'By creating or logging into an account you are agreeing with our ',
                         ),
                         TextSpan(
                           text: 'Terms and Conditions',
                           style: TextStyle(color: Color(0xFF1E63D3)),
                         ),
-                        TextSpan(
-                          text: ' and ',
-                        ),
+                        TextSpan(text: ' and '),
                         TextSpan(
                           text: 'Privacy Policy',
                           style: TextStyle(color: Color(0xFF1E63D3)),
                         ),
-                        TextSpan(
-                          text: '.',
-                        ),
+                        TextSpan(text: '.'),
                       ],
                     ),
                   ),

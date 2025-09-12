@@ -3,4 +3,7 @@ class AppRoutes {
 
   // Onboarding
   static String signIn = '/login';
+
+  // Appointment
+  static String appointmentList = '/appointment-list';
 }
