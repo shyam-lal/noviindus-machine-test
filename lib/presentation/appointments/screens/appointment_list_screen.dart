@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:novindus_machine_test/config/constants/app_routes.dart';
+import 'package:novindus_machine_test/config/decoration/size_configs.dart';
 import 'package:novindus_machine_test/presentation/appointments/model/appointment_list_model.dart';
 import 'package:novindus_machine_test/presentation/appointments/viewmodel/appointment_viewmodel.dart';
 import 'package:provider/provider.dart';
@@ -61,7 +62,16 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
                       child: TextField(
                         decoration: InputDecoration(
                           hintText: 'Search for treatments',
-                          prefixIcon: const Icon(Icons.search),
+                          hintStyle: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey,
+                          ),
+                          prefixIcon: const Icon(Icons.search, size: 20),
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 10,
+                            horizontal: 12,
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
@@ -73,6 +83,10 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
                       onPressed: () {},
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF0D5325),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
@@ -88,32 +102,44 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
                 Row(
                   children: [
                     const Text('Sort by :'),
-                    const SizedBox(width: 8),
-                    Expanded(
+                    // const SizedBox(width: 8),
+                    Spacer(),
+                    SizedBox(
+                      width: SizeConfigs.screenWidth! * 0.3,
+                      // height: SizeConfigs.screenHeight! * 0.1,
                       child: DropdownButtonFormField<String>(
                         decoration: InputDecoration(
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(30),
                           ),
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 12,
+                            // vertical: 8,
                           ),
                         ),
-                        value: 'Date',
+                        value: viewModel.sortBy,
                         items:
                             ['Date', 'Name', 'Price']
                                 .map(
                                   (label) => DropdownMenuItem(
                                     value: label,
-                                    child: Text(label),
+                                    child: Text(
+                                      label,
+                                      style: TextStyle(fontSize: 14),
+                                    ),
                                   ),
                                 )
                                 .toList(),
-                        onChanged: (value) {},
+                        onChanged: (value) {
+                          if (value != null) {
+                            viewModel.setSortBy(value);
+                          }
+                        },
                       ),
                     ),
                   ],
                 ),
+
                 const SizedBox(height: 16),
                 Expanded(
                   child: RefreshIndicator(
@@ -132,7 +158,7 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
                           );
                         }
 
-                        final patients = viewModel.appointments?.patients;
+                        final patients = viewModel.sortedPatients;
                         if (patients == null || patients.isEmpty) {
                           return const Center(
                             child: Text("No appointments found"),
