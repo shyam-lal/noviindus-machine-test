@@ -1,16 +1,34 @@
-# novindus_machine_test
+# Novindus Machine Test – Appointment Management App
 
-A new Flutter project.
+A Flutter application that demonstrates **appointment booking and management** with authentication, splash screen navigation, state management using Provider, and PDF receipt generation.  
 
-## Getting Started
+---
 
-This project is a starting point for a Flutter application.
+## Features
+- **Authentication**
+  - Login & session handling with `AuthService`
+- **Splash Screen**
+  - Shows logo and background, waits 2 seconds before navigation
+- **Appointments**
+  - View all appointments
+  - Create new appointment
+  - Fetch appointments from API (via `AppointmentViewModel`)
+- **State Management**
+  - Uses `provider` for reactive updates
+- **PDF Receipt**
+  - Auto-generate a receipt when creating an appointment (template-based)
 
-A few resources to get you started if this is your first Flutter project:
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Architecture: MVVM Flow
+1. **Model (Repository Layer)**  
+   - `AuthService` → handles authentication, token persistence via `SharedPreferences`.  
+   - Future: API integration for appointments.  
+
+2. **ViewModel (Business Logic Layer)**  
+   - `Viewmodels` → fetches, manages, and exposes appointment data to the UI.  
+   - Notifies views via `ChangeNotifier`.  
+
+3. **View (UI Layer)**  
+   - Widgets like `AppointmentList`, `CreateAppointmentScreen` consume `ViewModel` using `Provider`.  
+   - Only responsible for rendering and user interactions.  
