@@ -3,7 +3,12 @@ class BaseUrl {
 }
 
 class EndPoint {
+  // POst
   static String login = '/Login';
-  static String patientList = '/PatientList';
   static String registerPatient = '/PatientUpdate';
+
+  // Get
+  static String patientList = '/PatientList';
+  static String branches = '/BranchList';
+  static String treatments = '/TreatmentList';
 }

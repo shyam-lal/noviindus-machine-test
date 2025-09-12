@@ -19,6 +19,8 @@ class _RegistrationScreenState extends State<CreateAppointmentScreen> {
   String? _selectedMinute;
   String? pickedDateTime;
 
+  List<TreatmentModel> treatmentList = [];
+
   final nameController = TextEditingController();
   final numberController = TextEditingController();
   final addressController = TextEditingController();
@@ -29,13 +31,30 @@ class _RegistrationScreenState extends State<CreateAppointmentScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final viewModel = context.read<AppointmentViewModel>();
+    final branchNames =
+        viewModel.branches?.branches
+            ?.map((e) => e.name)
+            .whereType<String>()
+            .toList() ??
+        <String>[];
+
+    final treatmentNames =
+        viewModel.treatments?.treatments
+            ?.map((e) => e.name)
+            .whereType<String>()
+            .toList() ??
+        <String>[];
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {},
+          onPressed: () {
+            Navigator.pop(context);
+          },
         ),
         actions: [
           IconButton(
@@ -113,15 +132,31 @@ class _RegistrationScreenState extends State<CreateAppointmentScreen> {
               setState(() {
                 _selectedBranch = newValue;
               });
-            }, ['Branch 1', 'Branch 2']),
+            }, branchNames),
             SizedBox(height: 16),
             Text('Treatments'),
             SizedBox(height: 8),
-            _buildTreatmentCard(),
+
+            // Treatment list items
+            ...treatmentList.asMap().entries.map((entry) {
+              final index = entry.key;
+              final treatment = entry.value;
+
+              return _buildTreatmentCard(index, treatment);
+            }).toList(),
+
             SizedBox(height: 8),
             GestureDetector(
               onTap: () {
-                showTreatmentSelectionAlert(context);
+                showTreatmentSelectionAlert(
+                  context,
+                  treatmentNames,
+                  (treatment) => {
+                    setState(() {
+                      treatmentList.add(treatment);
+                    }),
+                  },
+                );
               },
               child: Container(
                 width: double.infinity,
@@ -264,7 +299,7 @@ class _RegistrationScreenState extends State<CreateAppointmentScreen> {
                     treatments: "100,90,86",
                   );
 
-                  final viewModel = context.read<AppointmentViewModel>();
+                  // final viewModel = context.read<AppointmentViewModel>();
                   final success = await viewModel.createAppointment(
                     appointment,
                   );
@@ -349,7 +384,7 @@ class _RegistrationScreenState extends State<CreateAppointmentScreen> {
     );
   }
 
-  Widget _buildTreatmentCard() {
+  Widget _buildTreatmentCard(int index, TreatmentModel model) {
     return Card(
       color: Colors.green[50],
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -362,30 +397,34 @@ class _RegistrationScreenState extends State<CreateAppointmentScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '1. Couple Combo package (Haircut, Hair Spa)',
+                    '${index + 1} ${model.treatment}',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: 8),
                   Row(
                     children: [
-                      _buildCountButton('Male', 2),
+                      _buildCountButton('Male', model.male ?? "0"),
                       SizedBox(width: 8),
-                      _buildCountButton('Female', 2),
+                      _buildCountButton('Female', model.female ?? "0"),
                     ],
                   ),
                 ],
               ),
             ),
-            Icon(Icons.cancel_outlined, color: Colors.red),
-            SizedBox(width: 8),
-            Icon(Icons.edit, color: Colors.green),
+            Column(
+              children: [
+                Icon(Icons.cancel_outlined, color: Colors.red),
+                SizedBox(width: 50),
+                Icon(Icons.edit, color: Colors.green),
+              ],
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildCountButton(String label, int count) {
+  Widget _buildCountButton(String label, String count) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
@@ -396,7 +435,7 @@ class _RegistrationScreenState extends State<CreateAppointmentScreen> {
         children: [
           Text(label),
           SizedBox(width: 4),
-          Text(count.toString(), style: TextStyle(fontWeight: FontWeight.bold)),
+          Text(count, style: TextStyle(fontWeight: FontWeight.bold)),
         ],
       ),
     );

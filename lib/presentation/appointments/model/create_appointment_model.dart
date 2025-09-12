@@ -53,3 +53,21 @@ class CreateAppointmentModel {
     };
   }
 }
+
+class TreatmentModel {
+  final String? treatment;
+  final String? male;
+  final String? female;
+
+  TreatmentModel({this.treatment, this.male, this.female});
+
+  // Map<String?, dynamic> toJson() {
+  //   return {
+  //     "name": name,
+  //     "excecutive": executive,
+  //     "payment": payment,
+  //     "phone": phone,
+  //     "address": address,
+  //   };
+  // }
+}
