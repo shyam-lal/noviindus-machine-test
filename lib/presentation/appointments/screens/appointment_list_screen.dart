@@ -4,11 +4,35 @@ import 'package:novindus_machine_test/presentation/appointments/model/appointmen
 import 'package:novindus_machine_test/presentation/appointments/viewmodel/appointment_viewmodel.dart';
 import 'package:provider/provider.dart';
 
-class AppointmentListScreen extends StatelessWidget {
+class AppointmentListScreen extends StatefulWidget {
   const AppointmentListScreen({super.key});
 
   @override
+  State<AppointmentListScreen> createState() => _AppointmentListScreenState();
+}
+
+class _AppointmentListScreenState extends State<AppointmentListScreen> {
+  @override
+  void initState() {
+    super.initState();
+
+    // Trigger fetch after widget is mounted
+    Future.microtask(() {
+      context.read<AppointmentViewModel>().fetchAppointments();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final vm = context.watch<AppointmentViewModel>();
+
+    if (vm.loading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    if (vm.error != null) {
+      return Scaffold(body: Center(child: Text("Error: ${vm.error}")));
+    }
     final viewModel = context.watch<AppointmentViewModel>();
     return Scaffold(
       appBar: AppBar(
@@ -139,9 +163,16 @@ class AppointmentListScreen extends StatelessWidget {
               right: 0,
               bottom: 50,
               child: ElevatedButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, AppRoutes.createAppointment);
+                onPressed: () async {
+                  final treatmentsOk = await viewModel.fetchTreatments();
+                  if (treatmentsOk) {
+                    final branchesOk = await viewModel.fetchBranches();
+                    if (branchesOk) {
+                      Navigator.pushNamed(context, AppRoutes.createAppointment);
+                    }
+                  }
                 },
+
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF0D5325),
                   shape: RoundedRectangleBorder(
