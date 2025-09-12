@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:novindus_machine_test/presentation/appointments/viewmodel/appointment_list_vm.dart';
 import 'package:provider/provider.dart';
 import 'package:novindus_machine_test/config/constants/app_routes.dart';
-import 'package:novindus_machine_test/presentation/appointments/viewmodel/appointment_viewmodel.dart';
 import 'package:novindus_machine_test/repositories/auth_service.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -25,7 +25,7 @@ class _SplashScreenState extends State<SplashScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final isLoggedIn = AuthService().isLoggedIn();
       if (isLoggedIn) {
-        context.read<AppointmentViewModel>().fetchAppointments();
+        context.read<AppointmentListViewModel>().fetchAppointments();
       }
     });
   }

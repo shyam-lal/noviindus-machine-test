@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:novindus_machine_test/presentation/appointments/viewmodel/appointment_list_vm.dart';
+import 'package:novindus_machine_test/presentation/appointments/viewmodel/create_appointment_vm.dart';
+import 'package:novindus_machine_test/presentation/appointments/viewmodel/master_data_vm.dart';
 import 'package:provider/provider.dart';
 import 'package:novindus_machine_test/config/constants/app_routes.dart';
 import 'package:novindus_machine_test/config/decoration/size_configs.dart';
 import 'package:novindus_machine_test/presentation/appointments/screens/appointment_list_screen.dart';
 import 'package:novindus_machine_test/presentation/appointments/screens/create_appointment_screen.dart';
-import 'package:novindus_machine_test/presentation/appointments/viewmodel/appointment_viewmodel.dart';
 import 'package:novindus_machine_test/presentation/onboarding/screens/login_screen.dart';
 import 'package:novindus_machine_test/presentation/onboarding/screens/splash_screen.dart';
 import 'package:novindus_machine_test/repositories/auth_service.dart';
@@ -15,7 +17,9 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => AppointmentViewModel()),
+        ChangeNotifierProvider(create: (_) => AppointmentListViewModel()),
+        ChangeNotifierProvider(create: (_) => CreateAppointmentViewModel()),
+        ChangeNotifierProvider(create: (_) => MasterDataViewModel()),
       ],
       child: const MyApp(),
     ),

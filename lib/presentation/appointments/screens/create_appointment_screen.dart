@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:novindus_machine_test/config/constants/app_colors.dart';
 import 'package:novindus_machine_test/presentation/appointments/model/create_appointment_model.dart';
-import 'package:novindus_machine_test/presentation/appointments/viewmodel/appointment_viewmodel.dart';
+import 'package:novindus_machine_test/presentation/appointments/viewmodel/appointment_list_vm.dart';
+import 'package:novindus_machine_test/presentation/appointments/viewmodel/create_appointment_vm.dart';
+import 'package:novindus_machine_test/presentation/appointments/viewmodel/master_data_vm.dart';
 import 'package:novindus_machine_test/presentation/appointments/widgets/choose_treatment_alert.dart';
 import 'package:novindus_machine_test/presentation/appointments/widgets/date_time_picker_field.dart';
 import 'package:provider/provider.dart';
@@ -31,9 +33,10 @@ class _RegistrationScreenState extends State<CreateAppointmentScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = context.read<AppointmentViewModel>();
+    final mdViewModel = context.read<MasterDataViewModel>();
+    final createViewModel = context.read<CreateAppointmentViewModel>();
     final branchNames =
-        viewModel.branches?.branches
+        mdViewModel.branches?.branches
             ?.map((e) => e.name)
             .whereType<String>()
             .toList() ??
@@ -41,7 +44,7 @@ class _RegistrationScreenState extends State<CreateAppointmentScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        // backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.black),
@@ -71,6 +74,7 @@ class _RegistrationScreenState extends State<CreateAppointmentScreen> {
               controller: nameController,
               decoration: InputDecoration(
                 hintText: 'Enter your full name',
+                hintStyle: TextStyle(fontSize: 12, color: Colors.grey),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                   borderSide: BorderSide.none,
@@ -86,6 +90,7 @@ class _RegistrationScreenState extends State<CreateAppointmentScreen> {
               keyboardType: TextInputType.number,
               decoration: InputDecoration(
                 hintText: 'Enter your Whatsapp number',
+                hintStyle: TextStyle(fontSize: 12, color: Colors.grey),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                   borderSide: BorderSide.none,
@@ -100,6 +105,7 @@ class _RegistrationScreenState extends State<CreateAppointmentScreen> {
               controller: addressController,
               decoration: InputDecoration(
                 hintText: 'Enter your full address',
+                hintStyle: TextStyle(fontSize: 12, color: Colors.grey),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                   borderSide: BorderSide.none,
@@ -143,7 +149,7 @@ class _RegistrationScreenState extends State<CreateAppointmentScreen> {
               onTap: () {
                 showTreatmentSelectionAlert(
                   context,
-                  viewModel.treatments?.treatments ?? [],
+                  mdViewModel.treatments?.treatments ?? [],
                   (treatment) => {
                     setState(() {
                       treatmentList.add(treatment);
@@ -302,12 +308,13 @@ class _RegistrationScreenState extends State<CreateAppointmentScreen> {
                   );
 
                   // final viewModel = context.read<AppointmentViewModel>();
-                  final success = await viewModel.createAppointment(
+                  final success = await createViewModel.createAppointment(
                     appointment,
                   );
 
                   if (success) {
-                    viewModel.onAppointmentCreated(appointment, treatmentList);
+                    final _viewModel = context.read<AppointmentListViewModel>();
+                    _viewModel.onAppointmentCreated();
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text("Appointment created successfully"),
@@ -318,7 +325,8 @@ class _RegistrationScreenState extends State<CreateAppointmentScreen> {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(
-                          viewModel.error ?? "Failed to create appointment",
+                          createViewModel.error ??
+                              "Failed to create appointment",
                         ),
                       ),
                     );
@@ -356,7 +364,10 @@ class _RegistrationScreenState extends State<CreateAppointmentScreen> {
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           isExpanded: true,
-          hint: Text(hintText),
+          hint: Text(
+            hintText,
+            style: TextStyle(fontSize: 12, color: Colors.grey),
+          ),
           value: value,
           icon: Icon(Icons.arrow_drop_down),
           onChanged: onChanged,

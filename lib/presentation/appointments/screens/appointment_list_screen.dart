@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:novindus_machine_test/config/constants/app_routes.dart';
 import 'package:novindus_machine_test/config/decoration/size_configs.dart';
 import 'package:novindus_machine_test/presentation/appointments/model/appointment_list_model.dart';
-import 'package:novindus_machine_test/presentation/appointments/viewmodel/appointment_viewmodel.dart';
+import 'package:novindus_machine_test/presentation/appointments/viewmodel/appointment_list_vm.dart';
+import 'package:novindus_machine_test/presentation/appointments/viewmodel/master_data_vm.dart';
 import 'package:provider/provider.dart';
 
 class AppointmentListScreen extends StatefulWidget {
@@ -19,22 +20,14 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
 
     // Trigger fetch after widget is mounted
     Future.microtask(() {
-      context.read<AppointmentViewModel>().fetchAppointments();
+      context.read<AppointmentListViewModel>().fetchAppointments();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final vm = context.watch<AppointmentViewModel>();
-
-    if (vm.loading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-
-    if (vm.error != null) {
-      return Scaffold(body: Center(child: Text("Error: ${vm.error}")));
-    }
-    final viewModel = context.watch<AppointmentViewModel>();
+    final viewModel = context.watch<AppointmentListViewModel>();
+    final masterDataViewModel = context.watch<MasterDataViewModel>();
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -102,11 +95,9 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
                 Row(
                   children: [
                     const Text('Sort by :'),
-                    // const SizedBox(width: 8),
-                    Spacer(),
+                    const Spacer(),
                     SizedBox(
                       width: SizeConfigs.screenWidth! * 0.3,
-                      // height: SizeConfigs.screenHeight! * 0.1,
                       child: DropdownButtonFormField<String>(
                         decoration: InputDecoration(
                           border: OutlineInputBorder(
@@ -114,7 +105,6 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
                           ),
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 12,
-                            // vertical: 8,
                           ),
                         ),
                         value: viewModel.sortBy,
@@ -139,7 +129,6 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
                     ),
                   ],
                 ),
-
                 const SizedBox(height: 16),
                 Expanded(
                   child: RefreshIndicator(
@@ -154,7 +143,26 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
 
                         if (viewModel.error != null) {
                           return Center(
-                            child: Text("Error: ${viewModel.error}"),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  "Error: ${viewModel.error}",
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                    color: Colors.red,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    viewModel.fetchAppointments();
+                                  },
+                                  child: const Text('Retry'),
+                                ),
+                              ],
+                            ),
                           );
                         }
 
@@ -166,7 +174,6 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
                         }
 
                         return ListView.builder(
-                          // padding: const EdgeInsets.all(16),
                           itemCount: patients.length,
                           itemBuilder: (context, index) {
                             final patient = patients[index];
@@ -184,36 +191,52 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
             ),
 
             // Register button
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 50,
-              child: ElevatedButton(
-                onPressed: () async {
-                  final treatmentsOk = await viewModel.fetchTreatments();
-                  if (treatmentsOk) {
-                    final branchesOk = await viewModel.fetchBranches();
-                    if (branchesOk) {
-                      Navigator.pushNamed(context, AppRoutes.createAppointment);
-                    }
-                  }
-                },
+            Builder(
+              builder: (context) {
+                if (viewModel.loading) {
+                  return const Center(child: SizedBox());
+                }
 
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF0D5325),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+                if (masterDataViewModel.loading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                return Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 50,
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      final treatmentsOk =
+                          await masterDataViewModel.fetchTreatments();
+                      if (treatmentsOk) {
+                        final branchesOk =
+                            await masterDataViewModel.fetchBranches();
+                        if (branchesOk) {
+                          Navigator.pushNamed(
+                            context,
+                            AppRoutes.createAppointment,
+                          );
+                        }
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF0D5325),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text(
+                      'Register',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
-                ),
-                child: const Text(
-                  'Register',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
+                );
+              },
             ),
           ],
         ),
