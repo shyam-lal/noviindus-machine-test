@@ -307,6 +307,7 @@ class _RegistrationScreenState extends State<CreateAppointmentScreen> {
                   );
 
                   if (success) {
+                    viewModel.onAppointmentCreated(appointment, treatmentList);
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text("Appointment created successfully"),

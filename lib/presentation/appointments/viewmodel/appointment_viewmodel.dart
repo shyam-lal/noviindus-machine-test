@@ -4,6 +4,8 @@ import 'package:novindus_machine_test/presentation/appointments/model/branch_lis
 import 'package:novindus_machine_test/presentation/appointments/model/create_appointment_model.dart';
 import 'package:novindus_machine_test/presentation/appointments/model/treatment_list_model.dart';
 import 'package:novindus_machine_test/presentation/appointments/repository/appointment_repository.dart';
+import 'package:novindus_machine_test/utils/receipt_generator_util.dart';
+import 'package:printing/printing.dart';
 
 class AppointmentViewModel extends ChangeNotifier {
   final AppointmentRepository _repository = AppointmentRepository();
@@ -140,5 +142,16 @@ class AppointmentViewModel extends ChangeNotifier {
         break;
     }
     return list;
+  }
+
+  // Receipt printing
+  Future<void> onAppointmentCreated(
+    CreateAppointmentModel model,
+    List<TreatmentModel> treatmentList,
+  ) async {
+    final pdfData = await ReceiptGenerator.generate(model, treatmentList);
+
+    await Printing.layoutPdf(onLayout: (_) async => pdfData);
+    await Printing.sharePdf(bytes: pdfData, filename: "receipt.pdf");
   }
 }
