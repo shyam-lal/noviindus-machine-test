@@ -4,16 +4,79 @@ import 'package:novindus_machine_test/config/constants/app_routes.dart';
 import 'package:novindus_machine_test/config/decoration/size_configs.dart';
 import 'package:novindus_machine_test/repositories/auth_service.dart';
 
-class LoginScreen extends StatelessWidget {
-  // const LoginScreen({super.key});
+class LoginScreen extends StatefulWidget {
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
 
+class _LoginScreenState extends State<LoginScreen> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+
+  final FocusNode _emailFocusNode = FocusNode();
+  final FocusNode _passwordFocusNode = FocusNode();
+
+  final GlobalKey _emailKey = GlobalKey();
+  final GlobalKey _passwordKey = GlobalKey();
+
+  @override
+  void initState() {
+    super.initState();
+    _emailFocusNode.addListener(() {
+      if (_emailFocusNode.hasFocus) {
+        _scrollToField(_emailKey);
+      }
+    });
+
+    _passwordFocusNode.addListener(() {
+      if (_passwordFocusNode.hasFocus) {
+        _scrollToField(_passwordKey);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    _scrollController.dispose();
+    _emailFocusNode.dispose();
+    _passwordFocusNode.dispose();
+    super.dispose();
+  }
+
+  void _scrollToField(GlobalKey key) {
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (key.currentContext != null) {
+        final RenderBox renderBox =
+            key.currentContext!.findRenderObject() as RenderBox;
+        final position = renderBox.localToGlobal(Offset.zero);
+        final screenHeight = MediaQuery.of(context).size.height;
+        final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+
+        final fieldBottom = position.dy + renderBox.size.height;
+        final visibleHeight = screenHeight - keyboardHeight;
+
+        if (fieldBottom > visibleHeight - 100) {
+          final scrollOffset = fieldBottom - visibleHeight + 150;
+
+          _scrollController.animateTo(
+            _scrollController.offset + scrollOffset,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+        }
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       body: SingleChildScrollView(
+        controller: _scrollController,
         child: Column(
           children: [
             Stack(
@@ -49,7 +112,11 @@ class LoginScreen extends StatelessWidget {
                   const Text('Email'),
                   const SizedBox(height: 8),
                   TextField(
+                    key: _emailKey,
                     controller: emailController,
+                    focusNode: _emailFocusNode,
+                    keyboardType: TextInputType.emailAddress,
+                    textInputAction: TextInputAction.next,
                     decoration: InputDecoration(
                       hintText: 'Enter your email',
                       filled: true,
@@ -58,14 +125,27 @@ class LoginScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(8),
                         borderSide: BorderSide.none,
                       ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: const BorderSide(
+                          color: Color(0xFF0D5325),
+                          width: 2,
+                        ),
+                      ),
                     ),
+                    onSubmitted: (_) {
+                      FocusScope.of(context).requestFocus(_passwordFocusNode);
+                    },
                   ),
                   const SizedBox(height: 16),
                   const Text('Password'),
                   const SizedBox(height: 8),
                   TextField(
+                    key: _passwordKey,
                     controller: passwordController,
+                    focusNode: _passwordFocusNode,
                     obscureText: true,
+                    textInputAction: TextInputAction.done,
                     decoration: InputDecoration(
                       hintText: 'Enter password',
                       filled: true,
@@ -74,27 +154,24 @@ class LoginScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(8),
                         borderSide: BorderSide.none,
                       ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: const BorderSide(
+                          color: Color(0xFF0D5325),
+                          width: 2,
+                        ),
+                      ),
                     ),
+                    onSubmitted: (_) {
+                      _handleLogin();
+                    },
                   ),
                   const SizedBox(height: 32),
                   SizedBox(
                     width: double.infinity,
                     height: 50,
                     child: ElevatedButton(
-                      onPressed: () async {
-                        final result = await AuthService().login(
-                          "test_user",
-                          "12345678",
-                        );
-                        if (result['success']) {
-                          Navigator.pushNamed(
-                            context,
-                            AppRoutes.appointmentList,
-                          );
-                        } else {
-                          print("Failed");
-                        }
-                      },
+                      onPressed: _handleLogin,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF0D5325),
                         shape: RoundedRectangleBorder(
@@ -130,6 +207,9 @@ class LoginScreen extends StatelessWidget {
                       ],
                     ),
                   ),
+                  SizedBox(
+                    height: MediaQuery.of(context).viewInsets.bottom + 50,
+                  ),
                 ],
               ),
             ),
@@ -137,5 +217,26 @@ class LoginScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void _handleLogin() async {
+    FocusScope.of(context).unfocus();
+
+    final result = await AuthService().login(
+      emailController.text,
+      passwordController.text,
+    );
+
+    if (result['success']) {
+      Navigator.pushNamed(context, AppRoutes.appointmentList);
+    } else {
+      print("Failed");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Login failed. Please check your credentials.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 }
