@@ -1,4 +1,4 @@
-# Novindus Machine Test – Appointment Management App
+# Noviindus Machine Test – Appointment Management App
 
 A Flutter application that demonstrates **appointment booking and management** with authentication, splash screen navigation, state management using Provider, and PDF receipt generation.  
 
