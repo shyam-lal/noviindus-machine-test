@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:novindus_machine_test/config/constants/app_routes.dart';
 import 'package:novindus_machine_test/presentation/appointments/model/appointment_list_model.dart';
 import 'package:novindus_machine_test/presentation/appointments/viewmodel/appointment_viewmodel.dart';
 import 'package:provider/provider.dart';
@@ -138,7 +139,9 @@ class AppointmentListScreen extends StatelessWidget {
               right: 0,
               bottom: 50,
               child: ElevatedButton(
-                onPressed: () async {},
+                onPressed: () {
+                  Navigator.pushNamed(context, AppRoutes.createAppointment);
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF0D5325),
                   shape: RoundedRectangleBorder(

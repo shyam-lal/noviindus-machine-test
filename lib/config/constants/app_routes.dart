@@ -6,4 +6,5 @@ class AppRoutes {
 
   // Appointment
   static String appointmentList = '/appointment-list';
+  static String createAppointment = '/create-appointment';
 }

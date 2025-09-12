@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:novindus_machine_test/presentation/appointments/model/appointment_list_model.dart';
+import 'package:novindus_machine_test/presentation/appointments/model/create_appointment_model.dart';
 import 'package:novindus_machine_test/presentation/appointments/repository/appointment_repository.dart';
 
 class AppointmentViewModel extends ChangeNotifier {
@@ -27,5 +28,24 @@ class AppointmentViewModel extends ChangeNotifier {
 
     _loading = false;
     notifyListeners();
+  }
+
+  // Create appointment
+  Future<bool> createAppointment(CreateAppointmentModel appointment) async {
+    _loading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final success = await _repository.createAppointment(appointment);
+      _loading = false;
+      notifyListeners();
+      return success;
+    } catch (e) {
+      _loading = false;
+      _error = e.toString();
+      notifyListeners();
+      return false;
+    }
   }
 }
