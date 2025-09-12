@@ -3,14 +3,21 @@ import 'package:flutter/material.dart';
 import 'package:novindus_machine_test/config/constants/app_colors.dart';
 import 'package:novindus_machine_test/config/decoration/size_configs.dart';
 import 'package:novindus_machine_test/presentation/appointments/model/create_appointment_model.dart';
+import 'package:novindus_machine_test/presentation/appointments/model/treatment_list_model.dart';
 
 void showTreatmentSelectionAlert(
   BuildContext context,
-  List<String> treatmentNames,
+  List<Treatments> treatments,
   Function(TreatmentModel) callback,
 ) {
-  // remove duplicates while preserving order
-  final uniqueNames = LinkedHashSet<String>.from(treatmentNames).toList();
+  final Map<String, int> treatmentMap = {
+    for (var t in treatments)
+      if (t.name != null && t.id != null) t.name!: t.id!,
+  };
+
+  // Unique treatment names
+  final uniqueNames = LinkedHashSet<String>.from(treatmentMap.keys).toList();
+
   String maleCount = "0";
   String femaleCount = "0";
 
@@ -18,6 +25,7 @@ void showTreatmentSelectionAlert(
     context: context,
     builder: (BuildContext context) {
       String? selectedTreatment;
+      String? selectedTreatmentId;
 
       return StatefulBuilder(
         builder: (context, setState) {
@@ -61,6 +69,8 @@ void showTreatmentSelectionAlert(
                         onChanged: (String? newValue) {
                           setState(() {
                             selectedTreatment = newValue;
+                            selectedTreatmentId =
+                                treatmentMap[newValue].toString();
                           });
                         },
                       ),
@@ -84,17 +94,22 @@ void showTreatmentSelectionAlert(
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () {
-                        final TreatmentModel model = TreatmentModel(
-                          treatment: selectedTreatment,
-                          male: maleCount,
-                          female: femaleCount,
-                        );
+                        if (selectedTreatment != null &&
+                            selectedTreatmentId != null) {
+                          final TreatmentModel model = TreatmentModel(
+                            treatmentId: selectedTreatmentId,
+                            treatment: selectedTreatment,
+                            male: maleCount,
+                            female: femaleCount,
+                          );
 
-                        if (selectedTreatment != null) {
+                          print("Selected ID: $selectedTreatmentId");
+
                           callback(model);
                         }
                         Navigator.of(context).pop();
                       },
+
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primaryColor,
                         foregroundColor: Colors.white,

@@ -39,13 +39,6 @@ class _RegistrationScreenState extends State<CreateAppointmentScreen> {
             .toList() ??
         <String>[];
 
-    final treatmentNames =
-        viewModel.treatments?.treatments
-            ?.map((e) => e.name)
-            .whereType<String>()
-            .toList() ??
-        <String>[];
-
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -150,7 +143,7 @@ class _RegistrationScreenState extends State<CreateAppointmentScreen> {
               onTap: () {
                 showTreatmentSelectionAlert(
                   context,
-                  treatmentNames,
+                  viewModel.treatments?.treatments ?? [],
                   (treatment) => {
                     setState(() {
                       treatmentList.add(treatment);
@@ -293,10 +286,19 @@ class _RegistrationScreenState extends State<CreateAppointmentScreen> {
                     balanceAmount: balanceController.text.toString(),
                     dateNdTime: pickedDateTime,
                     id: "",
-                    male: "2,3,4",
-                    female: "2,3,4",
+                    male: treatmentList
+                        .map((e) => e.male ?? "")
+                        .where((e) => e.isNotEmpty)
+                        .join(","),
+                    female: treatmentList
+                        .map((e) => e.female ?? "")
+                        .where((e) => e.isNotEmpty)
+                        .join(","),
                     branch: "166",
-                    treatments: "100,90,86",
+                    treatments: treatmentList
+                        .map((e) => e.treatmentId ?? "")
+                        .where((e) => e.isNotEmpty)
+                        .join(","),
                   );
 
                   // final viewModel = context.read<AppointmentViewModel>();
