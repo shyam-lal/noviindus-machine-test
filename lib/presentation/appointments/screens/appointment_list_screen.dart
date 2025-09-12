@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:novindus_machine_test/presentation/appointments/model/appointment_list_model.dart';
+import 'package:novindus_machine_test/presentation/appointments/viewmodel/appointment_viewmodel.dart';
+import 'package:provider/provider.dart';
 
 class AppointmentListScreen extends StatelessWidget {
   const AppointmentListScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final viewModel = context.watch<AppointmentViewModel>();
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -20,73 +24,135 @@ class AppointmentListScreen extends StatelessWidget {
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        child: Column(
+        child: Stack(
           children: [
-            const SizedBox(height: 16),
-            Row(
+            // Body
+            Column(
               children: [
-                Expanded(
-                  child: TextField(
-                    decoration: InputDecoration(
-                      hintText: 'Search for treatments',
-                      prefixIcon: const Icon(Icons.search),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        decoration: InputDecoration(
+                          hintText: 'Search for treatments',
+                          prefixIcon: const Icon(Icons.search),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                ElevatedButton(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0D5325),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                    const SizedBox(width: 8),
+                    ElevatedButton(
+                      onPressed: () {},
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF0D5325),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: const Text(
+                        'Search',
+                        style: TextStyle(color: Colors.white),
+                      ),
                     ),
-                  ),
-                  child: const Text(
-                    'Search',
-                    style: TextStyle(color: Colors.white),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    const Text('Sort by :'),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: DropdownButtonFormField<String>(
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                          ),
+                        ),
+                        value: 'Date',
+                        items:
+                            ['Date', 'Name', 'Price']
+                                .map(
+                                  (label) => DropdownMenuItem(
+                                    value: label,
+                                    child: Text(label),
+                                  ),
+                                )
+                                .toList(),
+                        onChanged: (value) {},
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: RefreshIndicator(
+                    onRefresh: () => viewModel.fetchAppointments(),
+                    child: Builder(
+                      builder: (context) {
+                        if (viewModel.loading) {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+
+                        if (viewModel.error != null) {
+                          return Center(
+                            child: Text("Error: ${viewModel.error}"),
+                          );
+                        }
+
+                        final patients = viewModel.appointments?.patients;
+                        if (patients == null || patients.isEmpty) {
+                          return const Center(
+                            child: Text("No appointments found"),
+                          );
+                        }
+
+                        return ListView.builder(
+                          // padding: const EdgeInsets.all(16),
+                          itemCount: patients.length,
+                          itemBuilder: (context, index) {
+                            final patient = patients[index];
+                            return BookingCard(
+                              patient: patient,
+                              index: index + 1,
+                            );
+                          },
+                        );
+                      },
+                    ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                const Text('Sort by :'),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: DropdownButtonFormField<String>(
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12),
-                    ),
-                    value: 'Date',
-                    items: ['Date', 'Name', 'Price']
-                        .map((label) => DropdownMenuItem(
-                              value: label,
-                              child: Text(label),
-                            ))
-                        .toList(),
-                    onChanged: (value) {},
+
+            // Register button
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 50,
+              child: ElevatedButton(
+                onPressed: () async {},
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF0D5325),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: ListView(
-                children: const [
-                  BookingCard(index: 1),
-                  BookingCard(index: 2),
-                  BookingCard(index: 3),
-                  BookingCard(),
-                  BookingCard(),
-                ],
+                child: const Text(
+                  'Register',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ),
           ],
@@ -97,17 +163,15 @@ class AppointmentListScreen extends StatelessWidget {
 }
 
 class BookingCard extends StatelessWidget {
-  final int? index;
+  final Patient patient;
+  final int index;
 
-  const BookingCard({super.key, this.index});
-
+  const BookingCard({super.key, required this.patient, required this.index});
   @override
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -115,20 +179,15 @@ class BookingCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                if (index != null)
-                  Text(
-                    '$index. ',
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
-                const Text(
-                  'Vikram Singh',
+                Text(
+                  "$index. ${patient.name}",
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
               ],
             ),
             const SizedBox(height: 4),
-            const Text(
-              'Couple Combo Package (Rejuvenation)',
+            Text(
+              "${patient.patientdetailsSet?.first.treatmentName}",
               style: TextStyle(color: Colors.green),
             ),
             const SizedBox(height: 8),
@@ -136,7 +195,10 @@ class BookingCard extends StatelessWidget {
               children: [
                 const Icon(Icons.calendar_today, size: 16, color: Colors.grey),
                 const SizedBox(width: 4),
-                const Text('31/01/2024', style: TextStyle(color: Colors.grey)),
+                Text(
+                  '${patient.dateNdTime}',
+                  style: TextStyle(color: Colors.grey),
+                ),
                 const SizedBox(width: 16),
                 const Icon(Icons.people, size: 16, color: Colors.grey),
                 const SizedBox(width: 4),

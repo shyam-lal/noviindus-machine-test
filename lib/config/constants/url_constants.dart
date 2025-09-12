@@ -4,4 +4,5 @@ class BaseUrl {
 
 class EndPoint {
   static String login = '/Login';
+  static String patientList = '/PatientList';
 }
